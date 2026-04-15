@@ -2,27 +2,35 @@ package StreetPulse.StreetPulse.services;
 
 
 import StreetPulse.StreetPulse.dto.BusinessRequest;
+import StreetPulse.StreetPulse.dto.BusinessResponse;
+import StreetPulse.StreetPulse.dto.ReviewRequest;
 import StreetPulse.StreetPulse.entity.Business;
 import StreetPulse.StreetPulse.entity.User;
 import StreetPulse.StreetPulse.repository.BusinessRepository;
 import StreetPulse.StreetPulse.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import java.util.stream.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BusinessService {
 
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
+    private final ReviewService reviewService;
 
     public BusinessService(BusinessRepository businessRepository,
-                           UserRepository userRepository){
+                           UserRepository userRepository,
+                           ReviewService reviewService){
         this.businessRepository = businessRepository;
         this.userRepository = userRepository;
+        this.reviewService = reviewService;
     }
+
+//    int count = 0;
 
     public Business createBusiness(BusinessRequest request){
 
@@ -50,6 +58,39 @@ public class BusinessService {
     }
 
     public Business getBusinessById(long id){
-        return businessRepository.findById(id).orElseThrow(()-> new RuntimeException("BUSINESS NOT FOUND"));
+
+        Business business = businessRepository.findById(id).orElseThrow(()->
+                new RuntimeException("BUSINESS NOT FOUND")
+        );
+
+        business.setViewCount(business.getViewCount() + 1);
+
+//        return businessRepository.findById(id).orElseThrow(()-> new RuntimeException("BUSINESS NOT FOUND"));
+        return businessRepository.save(business);
     }
+
+    public List <BusinessResponse> getTrendingBusiness (){
+
+        List <Business> businesses = businessRepository.findAll();
+
+        return businesses.stream()
+                .sorted((b1, b2) -> {
+            double score1 = b1.getViewCount() +
+                    (reviewService.getAverageRating(b1.getId())*10);
+
+            double score2 = b2.getViewCount() +
+                    (reviewService.getAverageRating(b2.getId())*10);
+
+            return Double.compare(score2, score1);
+        })
+                .map(b -> new BusinessResponse(
+                b.getId(),
+                b.getName(),
+                b.getCategory(),
+                b.getLocation(),
+                b.getViewCount(),
+                reviewService.getAverageRating(b.getId())
+        )).collect(Collectors.toList());
+    }
+
 }

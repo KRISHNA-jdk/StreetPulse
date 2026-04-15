@@ -26,12 +26,12 @@ public class BusinessController {
     }
 
     @GetMapping
-    public List<Business> getAllBusiness(){
+    public List<BusinessResponse> getAllBusiness(){
         return businessService.getAllBusiness();
     }
 
     @GetMapping("/{id}")
-    public Business getBusinessById(@PathVariable long id){
+    public BusinessResponse getBusinessById(@PathVariable long id){
         return businessService.getBusinessById(id);
     }
 
@@ -41,7 +41,7 @@ public class BusinessController {
     }
 
     @GetMapping("/my")
-    public List <Business> getMyBusiness(){
+    public List <BusinessResponse> getMyBusiness(){
         return businessService.getMyBusiness();
     }
 }

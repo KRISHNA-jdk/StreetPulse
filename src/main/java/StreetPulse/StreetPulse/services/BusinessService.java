@@ -53,20 +53,40 @@ public class BusinessService {
         return businessRepository.save(business);
     }
 
-    public List<Business> getAllBusiness(){
-        return businessRepository.findAll();
+    public List<BusinessResponse> getAllBusiness(){
+        List <Business> businesses = businessRepository.findAll();
+
+        return businesses.stream()
+                .map(b -> new BusinessResponse(
+                        b.getId(),
+                        b.getName(),
+                        b.getCategory(),
+                        b.getLocation(),
+                        b.getViewCount(),
+                        reviewService.getAverageRating(b.getId())
+                ))
+                .collect(Collectors.toList());
     }
 
-    public Business getBusinessById(long id){
+    public BusinessResponse getBusinessById(long id){
 
         Business business = businessRepository.findById(id).orElseThrow(()->
                 new RuntimeException("BUSINESS NOT FOUND")
         );
 
         business.setViewCount(business.getViewCount() + 1);
+        businessRepository.save(business);
 
 //        return businessRepository.findById(id).orElseThrow(()-> new RuntimeException("BUSINESS NOT FOUND"));
-        return businessRepository.save(business);
+        return new BusinessResponse(
+                business.getId(),
+                business.getName(),
+                business.getCategory(),
+                business.getLocation(),
+                business.getViewCount(),
+                reviewService.getAverageRating(business.getId())
+        );
+
     }
 
     public List <BusinessResponse> getTrendingBusiness (){
@@ -93,14 +113,28 @@ public class BusinessService {
         )).collect(Collectors.toList());
     }
 
-    public List <Business> getMyBusiness(){
+    public List <BusinessResponse> getMyBusiness(){
 
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = userRepository.findByEmail(email).
                 orElseThrow(()-> new RuntimeException("USER NOT FOUND"));
 
-        return businessRepository.findByOwnerId(user.getId());
+//        return businessRepository.findByOwnerId(user.getId());
+
+        List <Business> businesses = businessRepository.findByOwnerId(user.getId());
+
+        return businesses.stream()
+                .map(b -> new BusinessResponse(
+                        b.getId(),
+                        b.getName(),
+                        b.getCategory(),
+                        b.getLocation(),
+                        b.getViewCount(),
+                        reviewService.getAverageRating(b.getId())
+                ))
+                .collect(Collectors.toList());
+
 
     }
 

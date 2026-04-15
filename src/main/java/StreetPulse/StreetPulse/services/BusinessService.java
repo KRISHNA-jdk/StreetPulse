@@ -93,4 +93,15 @@ public class BusinessService {
         )).collect(Collectors.toList());
     }
 
+    public List <Business> getMyBusiness(){
+
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        User user = userRepository.findByEmail(email).
+                orElseThrow(()-> new RuntimeException("USER NOT FOUND"));
+
+        return businessRepository.findByOwnerId(user.getId());
+
+    }
+
 }

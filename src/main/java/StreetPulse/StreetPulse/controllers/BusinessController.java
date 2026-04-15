@@ -39,4 +39,9 @@ public class BusinessController {
     public List <BusinessResponse> getTrendingBusinesses(){
         return businessService.getTrendingBusiness();
     }
+
+    @GetMapping("/my")
+    public List <Business> getMyBusiness(){
+        return businessService.getMyBusiness();
+    }
 }

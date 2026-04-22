@@ -34,21 +34,19 @@ public class BusinessService {
 
     public Business createBusiness(BusinessRequest request){
 
-        //User owner = userRepository.findById(1L).orElseThrow(()-> new RuntimeException("OWNER NOT FOUND"));
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
-        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(()-> new RuntimeException("USER NOT FOUND"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Business business = new Business();
-
         business.setName(request.getName());
         business.setCategory(request.getCategory());
         business.setLocation(request.getLocation());
-        business.setOwner(owner);
-        business.setCreatedAt(LocalDateTime.now());
-        business.setUpdatedAt(LocalDateTime.now());
+
+        business.setOwner(user); // 🔥 THIS LINE IS CRITICAL
 
         return businessRepository.save(business);
     }

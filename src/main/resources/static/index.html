@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>StreetPulse</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+          --bg: #0f0f13;
+          --surface: #1a1a24;
+          --surface2: #22223a;
+          --accent: #6c63ff;
+          --accent2: #ff6584;
+          --green: #43e97b;
+          --text: #e8e8f0;
+          --muted: #888;
+          --border: #2e2e44;
+          --radius: 12px;
+        }
+
+        body {
+          font-family: 'Segoe UI', system-ui, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          min-height: 100vh;
+        }
+
+        /* NAV */
+        nav {
+          background: var(--surface);
+          border-bottom: 1px solid var(--border);
+          padding: 0 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 60px;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+        .logo { font-size: 1.4rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+        .logo span { color: var(--accent2); }
+        .nav-right { display: flex; gap: 0.5rem; align-items: center; }
+        #userBadge {
+          display: none;
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.82rem;
+          color: var(--green);
+        }
+        #logoutBtn {
+          display: none;
+          background: transparent;
+          border: 1px solid var(--accent2);
+          color: var(--accent2);
+          padding: 5px 14px;
+          border-radius: 20px;
+          cursor: pointer;
+          font-size: 0.82rem;
+        }
+        #logoutBtn:hover { background: var(--accent2); color: white; }
+
+        /* TABS */
+        .tabs {
+          display: flex;
+          gap: 0.25rem;
+          background: var(--surface);
+          border-bottom: 1px solid var(--border);
+          padding: 0 2rem;
+          overflow-x: auto;
+        }
+        .tab {
+          padding: 14px 20px;
+          cursor: pointer;
+          font-size: 0.88rem;
+          color: var(--muted);
+          border-bottom: 2px solid transparent;
+          white-space: nowrap;
+          transition: all 0.2s;
+        }
+        .tab:hover { color: var(--text); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        /* PAGES */
+        .page { display: none; padding: 2rem; max-width: 860px; margin: 0 auto; }
+        .page.active { display: block; }
+
+        /* CARDS */
+        .card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 1.5rem;
+          margin-bottom: 1rem;
+        }
+        .card h2 { font-size: 1rem; margin-bottom: 1.2rem; color: var(--text); }
+
+        /* FORM */
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 5px; }
+        input, textarea, select {
+          width: 100%;
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 10px 14px;
+          color: var(--text);
+          font-size: 0.9rem;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        textarea { resize: vertical; min-height: 80px; }
+
+        /* BUTTONS */
+        .btn {
+          display: inline-block;
+          padding: 10px 22px;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 600;
+          transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn:hover { opacity: 0.88; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--green); color: #0f0f13; }
+        .btn-danger  { background: var(--accent2); color: white; }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+        /* TOAST */
+        #toast {
+          position: fixed;
+          bottom: 1.5rem;
+          right: 1.5rem;
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-left: 4px solid var(--green);
+          padding: 12px 18px;
+          border-radius: var(--radius);
+          font-size: 0.87rem;
+          max-width: 320px;
+          z-index: 9999;
+          opacity: 0;
+          transform: translateY(10px);
+          transition: all 0.3s;
+          pointer-events: none;
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+        #toast.error { border-left-color: var(--accent2); }
+
+        /* BUSINESS CARD */
+        .biz-card {
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 1.2rem;
+          margin-bottom: 0.75rem;
+        }
+        .biz-name { font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
+        .biz-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+        .biz-meta span { margin-right: 12px; }
+        .biz-meta span::before { margin-right: 4px; }
+        .tag {
+          display: inline-block;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 2px 10px;
+          font-size: 0.75rem;
+          color: var(--accent);
+          margin-right: 6px;
+        }
+        .rating-stars { color: #ffd700; font-size: 0.9rem; }
+
+        /* TRENDING RANK */
+        .rank {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: var(--accent);
+          color: white;
+          font-size: 0.78rem;
+          font-weight: 700;
+          margin-right: 10px;
+          flex-shrink: 0;
+        }
+        .rank.gold { background: #ffd700; color: #111; }
+        .rank.silver { background: #c0c0c0; color: #111; }
+        .rank.bronze { background: #cd7f32; color: #111; }
+
+        /* AUTH GRID */
+        .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 600px) { .auth-grid { grid-template-columns: 1fr; } }
+
+        /* STATUS */
+        .auth-status {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.85rem;
+          padding: 10px 14px;
+          background: var(--surface2);
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          margin-bottom: 1.2rem;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+        .dot.active { background: var(--green); }
+        .dot.inactive { background: var(--accent2); }
+
+        /* SECTION HEADER */
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+        .section-header h2 { font-size: 1.1rem; }
+
+        /* REVIEW */
+        .review-card {
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 1rem;
+          margin-bottom: 0.6rem;
+        }
+        .review-card .author { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+        .review-card .comment { font-size: 0.88rem; }
+
+        /* EMPTY STATE */
+        .empty {
+          text-align: center;
+          padding: 2.5rem 1rem;
+          color: var(--muted);
+          font-size: 0.9rem;
+        }
+
+        /* LOADING */
+        .loading { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.88rem; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">Street<span>Pulse</span></div>
+    <div class="nav-right">
+        <div id="userBadge">●&nbsp;&nbsp;<span id="userEmail"></span></div>
+        <button id="logoutBtn" onclick="logout()">Logout</button>
+    </div>
+</nav>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('auth')">🔐 Auth</div>
+    <div class="tab" onclick="switchTab('business')">🏪 Businesses</div>
+    <div class="tab" onclick="switchTab('create')">➕ Create Business</div>
+    <div class="tab" onclick="switchTab('my')">👤 My Businesses</div>
+    <div class="tab" onclick="switchTab('trending')">📈 Trending</div>
+    <div class="tab" onclick="switchTab('reviews')">⭐ Reviews</div>
+</div>
+
+<!-- ===================== AUTH ===================== -->
+<div id="page-auth" class="page active">
+    <div class="auth-grid">
+
+        <div class="card">
+            <h2>Register</h2>
+            <div class="form-group">
+                <label>Name</label>
+                <input id="reg-name" type="text" placeholder="John Doe" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input id="reg-email" type="email" placeholder="john@example.com" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input id="reg-password" type="password" placeholder="••••••••" />
+            </div>
+            <button class="btn btn-primary" onclick="register()">Register</button>
+        </div>
+
+        <div class="card">
+            <h2>Login</h2>
+            <div class="auth-status">
+                <div class="dot" id="authDot"></div>
+                <span id="authStatusText">Not logged in</span>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input id="login-email" type="email" placeholder="john@example.com" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input id="login-password" type="password" placeholder="••••••••" />
+            </div>
+            <button class="btn btn-success" onclick="login()">Login</button>
+        </div>
+
+    </div>
+
+    <div class="card" id="tokenCard" style="display:none">
+        <h2>JWT Token</h2>
+        <textarea id="tokenDisplay" rows="4" readonly style="font-size:0.75rem; font-family:monospace; word-break:break-all;"></textarea>
+        <p style="font-size:0.78rem; color:var(--muted); margin-top:8px;">✅ Token stored in memory. All protected requests use it automatically.</p>
+    </div>
+</div>
+
+<!-- ===================== ALL BUSINESSES ===================== -->
+<div id="page-business" class="page">
+    <div class="section-header">
+        <h2>All Businesses</h2>
+        <button class="btn btn-primary btn-sm" onclick="loadAllBusinesses()">Refresh</button>
+    </div>
+    <div id="allBusinessList"><div class="empty">Login and click Refresh to load.</div></div>
+</div>
+
+<!-- ===================== CREATE BUSINESS ===================== -->
+<div id="page-create" class="page">
+    <div class="card">
+        <h2>Create New Business</h2>
+        <div class="form-group">
+            <label>Business Name</label>
+            <input id="biz-name" type="text" placeholder="e.g. Krishna's Chai Stall" />
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <input id="biz-category" type="text" placeholder="e.g. Food & Beverage" />
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input id="biz-location" type="text" placeholder="e.g. MG Road, Indore" />
+        </div>
+        <button class="btn btn-success" onclick="createBusiness()">Create Business</button>
+    </div>
+    <div id="createResult"></div>
+</div>
+
+<!-- ===================== MY BUSINESSES ===================== -->
+<div id="page-my" class="page">
+    <div class="section-header">
+        <h2>My Businesses</h2>
+        <button class="btn btn-primary btn-sm" onclick="loadMyBusinesses()">Refresh</button>
+    </div>
+    <div id="myBusinessList"><div class="empty">Login and click Refresh to load.</div></div>
+</div>
+
+<!-- ===================== TRENDING ===================== -->
+<div id="page-trending" class="page">
+    <div class="section-header">
+        <h2>📈 Trending Businesses</h2>
+        <button class="btn btn-primary btn-sm" onclick="loadTrending()">Refresh</button>
+    </div>
+    <div id="trendingList"><div class="empty">Login and click Refresh to load.</div></div>
+</div>
+
+<!-- ===================== REVIEWS ===================== -->
+<div id="page-reviews" class="page">
+    <div class="card">
+        <h2>Add Review</h2>
+        <div class="form-group">
+            <label>Business ID</label>
+            <input id="rev-businessId" type="number" placeholder="Enter business ID" />
+        </div>
+        <div class="form-group">
+            <label>Rating (1–5)</label>
+            <input id="rev-rating" type="number" min="1" max="5" placeholder="4" />
+        </div>
+        <div class="form-group">
+            <label>Comment</label>
+            <textarea id="rev-comment" placeholder="Write your review..."></textarea>
+        </div>
+        <button class="btn btn-success" onclick="addReview()">Submit Review</button>
+    </div>
+
+    <div class="card">
+        <h2>Get Reviews by Business</h2>
+        <div class="form-group">
+            <label>Business ID</label>
+            <input id="get-rev-id" type="number" placeholder="Enter business ID" />
+        </div>
+        <button class="btn btn-primary" onclick="loadReviews()">Load Reviews</button>
+        <div id="avgRating" style="margin-top:1rem; font-size:0.9rem; color:var(--green); display:none;"></div>
+        <div id="reviewList" style="margin-top:1rem;"></div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    // ============================================================
+    // CONFIG — change BASE_URL if your backend runs on different port
+    // ============================================================
+    const BASE_URL = 'http://localhost:8080';
+
+    // In-memory token store — no localStorage
+    let token = null;
+    let currentUserEmail = null;
+
+    // ============================================================
+    // UTILITY
+    // ============================================================
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'show' + (isError ? ' error' : '');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.className = ''; }, 3500);
+    }
+
+    function setAuthUI(email) {
+      currentUserEmail = email;
+      document.getElementById('userBadge').style.display = 'flex';
+      document.getElementById('userEmail').textContent = email;
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      document.getElementById('authDot').className = 'dot active';
+      document.getElementById('authStatusText').textContent = 'Logged in as ' + email;
+    }
+
+    function logout() {
+      token = null;
+      currentUserEmail = null;
+      document.getElementById('userBadge').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('authDot').className = 'dot inactive';
+      document.getElementById('authStatusText').textContent = 'Not logged in';
+      document.getElementById('tokenCard').style.display = 'none';
+      document.getElementById('tokenDisplay').value = '';
+      showToast('Logged out successfully');
+    }
+
+    function getHeaders(withAuth = false) {
+      const h = { 'Content-Type': 'application/json' };
+      if (withAuth && token) h['Authorization'] = 'Bearer ' + token;
+      return h;
+    }
+
+    // ============================================================
+    // TAB NAVIGATION
+    // ============================================================
+    function switchTab(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    async function register() {
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!name || !email || !password) {
+        showToast('All fields required', true); return;
+      }
+
+      // Exact JSON that AuthController expects via RegisterRequest DTO
+      const body = { name, email, password };
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          showToast('✅ Registered successfully! Now login.');
+          document.getElementById('login-email').value = email;
+        } else {
+          const text = await res.text();
+          showToast('Registration failed: ' + text, true);
+        }
+      } catch (err) {
+        showToast('Network error — is the backend running?', true);
+        console.error(err);
+      }
+    }
+
+    async function login() {
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        showToast('Email and password required', true); return;
+      }
+
+      // Exact JSON that AuthController expects via LoginRequest DTO
+      const body = { email, password };
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          // AuthResponse returns { token: "..." }
+          const data = await res.json();
+          token = data.token;
+          setAuthUI(email);
+          document.getElementById('tokenCard').style.display = 'block';
+          document.getElementById('tokenDisplay').value = token;
+          showToast('✅ Logged in!');
+        } else {
+          const text = await res.text();
+          showToast('Login failed: ' + text, true);
+        }
+      } catch (err) {
+        showToast('Network error — is the backend running?', true);
+        console.error(err);
+      }
+    }
+
+    // ============================================================
+    // BUSINESS — CREATE
+    // Endpoint: POST /api/business
+    // Auth: Bearer token required
+    // Body: { name, category, location }
+    // ============================================================
+    async function createBusiness() {
+      if (!token) { showToast('You must login first', true); return; }
+
+      const name     = document.getElementById('biz-name').value.trim();
+      const category = document.getElementById('biz-category').value.trim();
+      const location = document.getElementById('biz-location').value.trim();
+
+      if (!name) { showToast('Business name is required', true); return; }
+
+      const body = { name, category, location };
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/business`, {
+          method: 'POST',
+          headers: getHeaders(true),   // ← Authorization header injected here
+          body: JSON.stringify(body)
+        });
+
+        const result = document.getElementById('createResult');
+        if (res.ok) {
+          const biz = await res.json();
+          result.innerHTML = renderBizCard(biz);
+          showToast('✅ Business created! ID: ' + biz.id);
+          document.getElementById('biz-name').value = '';
+          document.getElementById('biz-category').value = '';
+          document.getElementById('biz-location').value = '';
+        } else {
+          const text = await res.text();
+          result.innerHTML = '';
+          showToast('Failed: ' + res.status + ' — ' + text, true);
+        }
+      } catch (err) {
+        showToast('Network error', true);
+        console.error(err);
+      }
+    }
+
+    // ============================================================
+    // BUSINESS — GET ALL
+    // Endpoint: GET /api/business
+    // Auth: Bearer token required
+    // ============================================================
+    async function loadAllBusinesses() {
+      if (!token) { showToast('Login first', true); return; }
+
+      const list = document.getElementById('allBusinessList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/business`, {
+          headers: getHeaders(true)
+        });
+
+        if (res.ok) {
+          const businesses = await res.json();
+          list.innerHTML = businesses.length
+            ? businesses.map(b => renderBizCard(b)).join('')
+            : '<div class="empty">No businesses yet.</div>';
+        } else {
+          list.innerHTML = '<div class="empty">Failed to load.</div>';
+          showToast('Error: ' + res.status, true);
+        }
+      } catch (err) {
+        list.innerHTML = '<div class="empty">Network error.</div>';
+        console.error(err);
+      }
+    }
+
+    // ============================================================
+    // BUSINESS — MY BUSINESSES
+    // Endpoint: GET /api/business/my
+    // Auth: Bearer token required
+    // ============================================================
+    async function loadMyBusinesses() {
+      if (!token) { showToast('Login first', true); return; }
+
+      const list = document.getElementById('myBusinessList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/business/my`, {
+          headers: getHeaders(true)
+        });
+
+        if (res.ok) {
+          const businesses = await res.json();
+          list.innerHTML = businesses.length
+            ? businesses.map(b => renderBizCard(b)).join('')
+            : '<div class="empty">You haven\'t created any businesses yet.</div>';
+        } else {
+          list.innerHTML = '<div class="empty">Failed to load.</div>';
+          showToast('Error: ' + res.status, true);
+        }
+      } catch (err) {
+        list.innerHTML = '<div class="empty">Network error.</div>';
+        console.error(err);
+      }
+    }
+
+    // ============================================================
+    // BUSINESS — TRENDING
+    // Endpoint: GET /api/business/trending
+    // Auth: Bearer token required
+    // ============================================================
+    async function loadTrending() {
+      if (!token) { showToast('Login first', true); return; }
+
+      const list = document.getElementById('trendingList');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/business/trending`, {
+          headers: getHeaders(true)
+        });
+
+        if (res.ok) {
+          const businesses = await res.json();
+          list.innerHTML = businesses.length
+            ? businesses.map((b, i) => renderTrendingCard(b, i)).join('')
+            : '<div class="empty">No trending businesses yet.</div>';
+        } else {
+          list.innerHTML = '<div class="empty">Failed to load.</div>';
+          showToast('Error: ' + res.status, true);
+        }
+      } catch (err) {
+        list.innerHTML = '<div class="empty">Network error.</div>';
+        console.error(err);
+      }
+    }
+
+    // ============================================================
+    // REVIEWS
+    // POST /api/review  — body: { businessId, rating, comment }
+    // GET  /api/review/business/{id}
+    // GET  /api/review/business/{id}/average
+    // ============================================================
+    async function addReview() {
+      if (!token) { showToast('Login first', true); return; }
+
+      const businessId = parseInt(document.getElementById('rev-businessId').value);
+      const rating     = parseInt(document.getElementById('rev-rating').value);
+      const comment    = document.getElementById('rev-comment').value.trim();
+
+      if (!businessId || !rating) { showToast('Business ID and rating required', true); return; }
+      if (rating < 1 || rating > 5) { showToast('Rating must be 1–5', true); return; }
+
+      const body = { businessId, rating, comment };
+
+      try {
+        const res = await fetch(`${BASE_URL}/api/review`, {
+          method: 'POST',
+          headers: getHeaders(true),
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          showToast('✅ Review added!');
+          document.getElementById('rev-comment').value = '';
+          document.getElementById('rev-rating').value = '';
+        } else {
+          const text = await res.text();
+          showToast('Failed: ' + text, true);
+        }
+      } catch (err) {
+        showToast('Network error', true);
+        console.error(err);
+      }
+    }
+
+    async function loadReviews() {
+      if (!token) { showToast('Login first', true); return; }
+
+      const id = document.getElementById('get-rev-id').value;
+      if (!id) { showToast('Enter a business ID', true); return; }
+
+      const list    = document.getElementById('reviewList');
+      const avgDiv  = document.getElementById('avgRating');
+      list.innerHTML = '<div class="loading">Loading...</div>';
+
+      try {
+        // Fetch reviews and average in parallel
+        const [revRes, avgRes] = await Promise.all([
+          fetch(`${BASE_URL}/api/review/business/${id}`,          { headers: getHeaders(true) }),
+          fetch(`${BASE_URL}/api/review/business/${id}/average`,  { headers: getHeaders(true) })
+        ]);
+
+        if (revRes.ok) {
+          const reviews = await revRes.json();
+          list.innerHTML = reviews.length
+            ? reviews.map(r => renderReviewCard(r)).join('')
+            : '<div class="empty">No reviews yet for this business.</div>';
+        }
+
+        if (avgRes.ok) {
+          const avg = await avgRes.json();
+          avgDiv.style.display = 'block';
+          avgDiv.innerHTML = `⭐ Average Rating: <strong>${avg.toFixed(1)}</strong> / 5.0`;
+        }
+      } catch (err) {
+        list.innerHTML = '<div class="empty">Network error.</div>';
+        console.error(err);
+      }
+    }
+
+    // ============================================================
+    // RENDER HELPERS
+    // ============================================================
+    function renderBizCard(b) {
+      const ownerName = b.owner ? (b.owner.name || b.owner.email || 'Unknown') : 'Unknown';
+      return `
+        <div class="biz-card">
+          <div class="biz-name">${esc(b.name)}</div>
+          <div class="biz-meta">
+            <span>📂 ${esc(b.category || 'N/A')}</span>
+            <span>📍 ${esc(b.location || 'N/A')}</span>
+            <span>👁 ${b.viewCount || 0} views</span>
+            <span style="color:var(--muted)">ID: ${b.id}</span>
+          </div>
+          <span class="tag">${esc(ownerName)}</span>
+        </div>`;
+    }
+
+    function renderTrendingCard(b, index) {
+      const rankClass = index === 0 ? 'rank gold' : index === 1 ? 'rank silver' : index === 2 ? 'rank bronze' : 'rank';
+      return `
+        <div class="biz-card" style="display:flex; align-items:flex-start; gap:10px;">
+          <div class="${rankClass}">${index + 1}</div>
+          <div style="flex:1">
+            <div class="biz-name">${esc(b.name)}</div>
+            <div class="biz-meta">
+              <span>📂 ${esc(b.category || 'N/A')}</span>
+              <span>📍 ${esc(b.location || 'N/A')}</span>
+              <span>👁 ${b.viewCount || 0} views</span>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderReviewCard(r) {
+      const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+      const author = r.user ? (r.user.name || r.user.email || 'Anonymous') : 'Anonymous';
+      return `
+        <div class="review-card">
+          <div class="author">${esc(author)}</div>
+          <div class="rating-stars">${stars}</div>
+          <div class="comment">${esc(r.comment || '')}</div>
+        </div>`;
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ============================================================
+    // INIT — check if already have token in memory (no-op on first load)
+    // ============================================================
+    window.addEventListener('load', () => {
+      const dot = document.getElementById('authDot');
+      dot.className = 'dot inactive';
+    });
+</script>
+</body>
+</html>

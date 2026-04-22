@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("api/business")
 public class BusinessController {
 
@@ -22,6 +23,7 @@ public class BusinessController {
 
     @PostMapping
     public Business createBusiness(@RequestBody BusinessRequest request){
+        System.out.println("🔥 HIT CONTROLLER");
         return businessService.createBusiness(request);
     }
 

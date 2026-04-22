@@ -1,125 +1,93 @@
 # 🚀 StreetPulse
 
-StreetPulse is a backend system built using **Spring Boot, MySQL, and JWT Authentication** that allows users to discover, review, and analyze local businesses based on engagement metrics.
+StreetPulse is a backend-driven platform to discover and analyze local businesses based on engagement metrics like views and ratings.
 
 ---
 
-## 📌 Features
+## 🧠 Features
 
-### 🔐 Authentication
-- User Registration & Login
-- JWT-based secure authentication
-- Protected APIs
-
-### 🏪 Business Management
-- Create Business
-- Get All Businesses
-- Get Business by ID
-- Get My Businesses (user-specific)
-- View Count Tracking
-
-### ⭐ Review System
-- Add Reviews to Businesses
-- Fetch Reviews by Business
-- Average Rating Calculation
-
-### 📈 Trending System (Core USP)
-- Businesses ranked based on:
-    - View Count
-    - Average Rating
-- Dynamic scoring algorithm
-
-### ⚙️ Backend Standards
-- Global Exception Handling
-- Input Validation (`@Valid`)
-- Clean DTO-based responses
-- Layered Architecture (Controller → Service → Repository)
+- 🔐 JWT Authentication (Login/Register)
+- 🏪 Business Management (Create, Fetch, Trending)
+- ⭐ Review System (Add, Fetch, Average Rating)
+- 📈 View-based Trending Algorithm
 
 ---
 
-## 🧠 Tech Stack
+## ⚙️ Tech Stack
 
 - Java (Spring Boot)
-- Spring Security
-- JWT (Authentication)
-- MySQL
+- Spring Security (JWT)
+- MySQL / PostgreSQL
 - JPA / Hibernate
-- Maven
 
 ---
 
-## ⚡ API Endpoints
+## 🚀 How to Run
 
-### 🔓 Public APIs
-
-| Method | Endpoint | Description |
-|--------|--------|------------|
-| POST | `/api/auth/register` | Register user |
-| POST | `/api/auth/login` | Login user |
-
----
-
-### 🔐 Protected APIs
-
-#### Business
-
-| Method | Endpoint | Description |
-|--------|--------|------------|
-| POST | `/api/business` | Create business |
-| GET | `/api/business` | Get all businesses |
-| GET | `/api/business/{id}` | Get business by ID |
-| GET | `/api/business/my` | Get my businesses |
-| GET | `/api/business/trending` | Get trending businesses |
+1. Clone repo
+2. Configure database in `application.properties`
+3. Run Spring Boot application
+4. Backend runs on:
+   http://localhost:8080
 
 ---
 
-#### Review
+## 🌐 API Documentation
 
-| Method | Endpoint | Description |
-|--------|--------|------------|
-| POST | `/api/review` | Add review |
-| GET | `/api/review/business/{id}` | Get reviews by business |
-| GET | `/api/review/business/{id}/average` | Get average rating |
+Swagger UI:
 
----
+http://localhost:8080/swagger-ui/index.html
 
-## 🔐 Authentication Usage
+### How to Use:
 
-For protected APIs, add header:
-
-
-Authorization: Bearer <your_token>
-
+1. Register user → `/api/auth/register`
+2. Login → `/api/auth/login`
+3. Copy token
+4. Click **Authorize 🔒**
+5. Paste:
+   Bearer <your_token>
+6. Now access protected APIs
 
 ---
 
-## ⚙️ How to Run
+## 🧪 Frontend
 
-1. Clone the repository
-2. Open in IntelliJ
-3. Configure MySQL in `application.properties`
-4. Run Spring Boot application
-5. Test APIs using Postman
+A basic frontend UI is provided:
 
----
+`frontend/index.html`
 
-## 📊 Project Architecture
-
-
-Controller → Service → Repository → Database
-
+- Login
+- Create Business
+- View Businesses
+- View Count increment via API
 
 ---
 
-## 🎯 Future Improvements
+## 📊 Key Feature (USP)
 
-- Pagination & Filtering
-- Image Upload for Reviews
-- Caching (Redis)
-- Advanced Trending Algorithm
-- Deployment (AWS / Render)
+Each time a business is fetched by ID:
+
+
+GET /api/business/{id}
+
+
+👉 View count increases  
+👉 Used in trending score calculation
 
 ---
+
+## ⚙️ Scalability Considerations
+
+- Microservices architecture can separate User, Business, and Review services
+- Redis caching for trending businesses and ratings
+- Database indexing for faster queries
+- Load balancing using Nginx or cloud services
+- Async processing using Kafka/RabbitMQ for analytics
+- Containerization using Docker and Kubernetes
+
+---
+
+"SORRY FOR A PROBLEM, FRONTEND IS STILL NOT READY TO VIEW RATING AND VIEWS, HOWEVER, IT CAN BE ACHIEVED ON json TESTING ON SWAGGER, BUT WORKING ON IT TO FIX IT ASAP"
 
 ## 👨‍💻 Author
 
